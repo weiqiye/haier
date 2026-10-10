@@ -32,11 +32,19 @@ class HaierSensor(HaierAbstractEntity, SensorEntity):
         comparison_table = self._attribute.ext.get('value_comparison_table', {})
 
         value = self._attributes_data[self._attribute.key]
+        # 列表型属性（如无值时上报空列表 []）归一化处理：空列表视为无值，
+        # 单元素列表取首元素，避免列表作为不可哈希键触发 TypeError。
+        if isinstance(value, list):
+            if not value:
+                self._attr_native_value = None
+                return
+            value = value[0]
+
         if value in (None, ''):
             self._attr_native_value = None
             return
 
-        self._attr_native_value = comparison_table[value] if value in comparison_table else value
+        self._attr_native_value = comparison_table.get(value, value)
 
 
 

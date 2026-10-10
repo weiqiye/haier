@@ -43,6 +43,18 @@ class HaierSelect(HaierAbstractEntity, SelectEntity):
 
     def _get_value_from_comparison_table(self, value):
         value_comparison_table = self._attribute.ext.get('value_comparison_table', {})
+
+        # 部分设备的列表型属性（如 heatingMode）在无激活模式时会上报空列表 []，
+        # 此时没有可对应的选项，直接返回 None 表示未选中，避免打印无意义的告警。
+        if isinstance(value, list):
+            if not value:
+                return None
+            # 单元素列表取首元素再查表，兼容设备以列表形式返回单个取值的情况
+            value = value[0]
+
+        if value in (None, ''):
+            return None
+
         if str(value) not in value_comparison_table:
             _LOGGER.warning('Device [{}] attribute [{}] value [{}] not recognizable'.format(
                 self._device.id, self._attribute.key, value
