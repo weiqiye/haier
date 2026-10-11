@@ -1,4 +1,5 @@
 {
   "name": "Haier",
-  "render_readme": true
+  "render_readme": true,
+  "release": true
 }
